@@ -1,0 +1,23 @@
+package com.minisheep.bean
+
+import com.minisheep.bean.Resource;
+import com.minisheep.bean.Plan;
+
+/*
+	1.能量不足,不能参与该任务(剩余时常)
+	2.不是对应航班任务的人员不能执行该任务
+	3.不在相应时间的不能参与该任务(周几,几点)
+	4.有其他任务在身的不能参与该任务(isWorking)
+	5.如果任务完成的话setWorking置为false,一分配到任务体力立刻扣掉相应的航班任务所需时间
+*/
+
+rule isWorkingabc   //当前有任务在身的不允许执行其他任务
+	salience 1
+	lock-on-active true //no-loop增强版
+	when
+		$resource : Resource(isWorking == false)  //当前没有任务执行
+	then
+		$resource.setWorking(true);  //然后下面可以获取可以工作的人
+end
+
+

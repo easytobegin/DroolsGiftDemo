@@ -1,6 +1,6 @@
 package com.sample;
 
-import com.minisheep.bean.PointDomain;
+import com.minisheep.bean.Resource;
 
 public interface PointRuleEngine {
 	/*
@@ -16,5 +16,5 @@ public interface PointRuleEngine {
 	/*
 	 * 执行规则引擎
 	 */
-	public void executeRuleEngine(final PointDomain pointDomain);
+	public void executeRuleEngine(final Resource resource);
 }

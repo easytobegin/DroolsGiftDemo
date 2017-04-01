@@ -31,7 +31,7 @@ public class Test {
                 pointDomain.setBirthDay(true);  
                 pointDomain.setPoint(0l);  
                 
-                pointRuleEngine.executeRuleEngine(pointDomain);
+               // pointRuleEngine.executeRuleEngine(pointDomain);
                 
                 System.out.println("执行完毕BillThisMonth："+pointDomain.getBillThisMonth());  
                 System.out.println("执行完毕BuyMoney："+pointDomain.getBuyMoney());  

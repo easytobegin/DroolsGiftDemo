@@ -14,6 +14,7 @@ import org.drools.core.StatefulSession;
 import org.drools.core.rule.Package;
 
 import com.minisheep.bean.PointDomain;
+import com.minisheep.bean.Resource;
 import com.minisheep.bean.RuleBaseFacatory;
 
 public class PointRuleEngineImpl implements PointRuleEngine{
@@ -46,7 +47,7 @@ public class PointRuleEngineImpl implements PointRuleEngine{
 	
 	
 
-	public void executeRuleEngine(PointDomain pointDomain) {
+	public void executeRuleEngine(final Resource resource) {
 		// TODO Auto-generated method stub
 		if(ruleBase == null){
 			return;
@@ -60,7 +61,7 @@ public class PointRuleEngineImpl implements PointRuleEngine{
 			return;
 		}
 		StatefulSession statefulSession = ruleBase.newStatefulSession();
-		statefulSession.insert(pointDomain);
+		statefulSession.insert(resource);
 		
 		statefulSession.fireAllRules();
 		
@@ -124,9 +125,9 @@ public class PointRuleEngineImpl implements PointRuleEngine{
 	private List<String> getTestDrlFile() {
 		// TODO Auto-generated method stub
 		List<String> drlFilePath = new ArrayList<String>();
-		drlFilePath.add("/Users/minisheep/Documents/workspace/rockDrools/src/main/resources/rules/addpoint.drl");
-		drlFilePath.add("/Users/minisheep/Documents/workspace/rockDrools/src/main/resources/rules/subpoint.drl");
-		
+		//drlFilePath.add("/Users/minisheep/Documents/workspace/rockDrools/src/main/resources/rules/addpoint.drl");
+		//drlFilePath.add("/Users/minisheep/Documents/workspace/rockDrools/src/main/resources/rules/subpoint.drl");
+		drlFilePath.add("/Users/minisheep/Documents/workspace/rockDrools/src/main/resources/rules/resource.drl");
 		return drlFilePath;
 	}
 	

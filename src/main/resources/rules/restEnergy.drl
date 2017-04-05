@@ -1,0 +1,16 @@
+package com.minisheep.bean
+
+import com.minisheep.bean.Resource;
+import com.minisheep.bean.Plan;
+
+rule restEnergy
+	salience 99
+	lock-on-active true //no-loop增强版
+	when
+		$resource : Resource(isWorking == true)
+	then
+		$resource.setRemainMinute($resource.getRemainMinute() - (($resource.getPlan().getPlanEndTime() - $resource.getPlan().getPlanStartTime()) * 60));
+		$resource.setStartWorkTime($resource.getStartWorkTime() + ($resource.getPlan().getPlanEndTime() - $resource.getPlan().getPlanStartTime()));
+		//System.out.println("Remain:" + $resource.getRemainMinute() - (($resource.getPlan().getPlanEndTime() - $resource.getPlan().getPlanStartTime()) * 60));
+		System.out.println("startWorkTime:" + $resource.getStartWorkTime() + ($resource.getPlan().getPlanEndTime() - $resource.getPlan().getPlanStartTime()));
+end

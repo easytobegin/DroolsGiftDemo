@@ -128,6 +128,7 @@ public class PointRuleEngineImpl implements PointRuleEngine{
 		//drlFilePath.add("/Users/minisheep/Documents/workspace/rockDrools/src/main/resources/rules/addpoint.drl");
 		//drlFilePath.add("/Users/minisheep/Documents/workspace/rockDrools/src/main/resources/rules/subpoint.drl");
 		drlFilePath.add("/Users/minisheep/Documents/workspace/rockDrools/src/main/resources/rules/resource.drl");
+		//drlFilePath.add("/Users/minisheep/Documents/workspace/rockDrools/src/main/resources/rules/restEnergy.drl");
 		return drlFilePath;
 	}
 	

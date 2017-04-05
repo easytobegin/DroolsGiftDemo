@@ -11,13 +11,63 @@ import com.minisheep.bean.Plan;
 	5.如果任务完成的话setWorking置为false,一分配到任务体力立刻扣掉相应的航班任务所需时间
 */
 
-rule isWorkingabc   //当前有任务在身的不允许执行其他任务
-	salience 1
+
+//还没加上体力的判断,同样的资源,同样的可以执行任务,有限派出体力多的
+//任务执行完毕还原
+rule isWorking   //当前有任务在身的不允许执行其他任务
+	salience 100
 	lock-on-active true //no-loop增强版
 	when
-		$resource : Resource(isWorking == false)  //当前没有任务执行
+		$resource : Resource(isWorking == false,(endWorkTime - startWorkTime) > (plan.planEndTime - plan.planStartTime)
+		,((startWorkTime < plan.planStartTime || startWorkTime == plan.planStartTime) && 
+		(endWorkTime > plan.planEndTime || endWorkTime == plan.planEndTime)) && category == plan.planTitle)  //当前没有任务执行,可以分配任务
 	then
-		$resource.setWorking(true);  //然后下面可以获取可以工作的人
+		$resource.setEnableWork(true);  //这个人是可以工作的
+		$resource.setRemainMinute($resource.getRemainMinute() - (($resource.getPlan().getPlanEndTime() - $resource.getPlan().getPlanStartTime()) * 60));
+		$resource.setStartWorkTime($resource.getPlan().getPlanEndTime());  //任务的结束时间就是该人员可以再开始的时间
+		//update($resource);
+		//System.out.println("working enable");
 end
+
+	
+
+/*
+rule restEnergy
+	salience 99
+	lock-on-active true //no-loop增强版
+	when
+		$resource : Resource(isWorking == true)
+	then
+		$resource.setRemainMinute($resource.getRemainMinute() - (($resource.getPlan().getPlanEndTime() - $resource.getPlan().getPlanStartTime()) * 60));
+		$resource.setStartWorkTime($resource.getStartWorkTime() + ($resource.getPlan().getPlanEndTime() - $resource.getPlan().getPlanStartTime()));
+		//System.out.println("Remain:" + $resource.getRemainMinute() - (($resource.getPlan().getPlanEndTime() - $resource.getPlan().getPlanStartTime()) * 60));
+		System.out.println("startWorkTime:" + $resource.getStartWorkTime() + ($resource.getPlan().getPlanEndTime() - $resource.getPlan().getPlanStartTime()));
+end
+*/
+/*
+//能量够不够
+rule energy
+	salience 99
+	lock-on-active true //no-loop增强版
+	//能量够不够,还有条件要是可以分配状态
+	when 
+		$resource : Resource((endWorkTime - startWorkTime) > (plan.planEndTime - plan.planStartTime),enableWork == true)
+	then
+		$resource.setEnableWork(true);  //这个人是可以工作的
+		//update($resource);
+		System.out.println("energy enable");
+end
+
+rule InPlanTime
+	salience 98
+	lock-on-active true
+	when
+		$resource : Resource(startWorkTime < plan.planStartTime,endWorkTime > plan.planEndTime,enableWork == true)
+	then
+		$resource.setEnableWork(true); //这个人是可以工作的
+		System.out.println("in plan Time");
+end
+
+*/
 
 

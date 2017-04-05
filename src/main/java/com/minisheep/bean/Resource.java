@@ -4,10 +4,14 @@ public class Resource {
 	/*
 	 * 人员指派任务用setPlanAlloc
 	 */
+	public Resource(){
+		plan = new Plan();
+	}
+
+	private String category;
 	
-	//资源类型
-	private int category;
-	
+	//id
+	private int id;
 	//资源名称(和任务键值对可以关联)
 	private String resourceName; 
 	
@@ -15,16 +19,16 @@ public class Resource {
 	private boolean isWorkDay;
 	
 	//资源上班时间开始(周几)
-	private String startWorkDay;
+	private int startWorkDay;
 	
 	//资源上班时间结束(周几)
-	private String endWorkDay;
+	private int endWorkDay;
 	
-	//资源上班时间开始(几点)
-	private String startWorkTime;
+	//资源上班时间开始(几点,换算成分钟)
+	private int startWorkTime;
 	
-	//资源上班时间结束(几点) 
-	private String endWorkTime;
+	//资源上班时间结束(几点,换算成分钟) 
+	private int endWorkTime;
 	
 	//能量,100%代表不可用了,用0-100表示
 	private int energy;
@@ -40,6 +44,17 @@ public class Resource {
 	
 	//Plan成员变量
 	private Plan plan;
+	
+	//能否胜任此项工作
+	private boolean enableWork;
+
+	public boolean isEnableWork() {
+		return enableWork;
+	}
+
+	public void setEnableWork(boolean enableWork) {
+		this.enableWork = enableWork;
+	}
 
 	public Plan getPlan() {
 		return plan;
@@ -65,11 +80,11 @@ public class Resource {
 		this.isWorking = isWorking;
 	}
 
-	public int getCategory() {
+	public String getCategory() {
 		return category;
 	}
 
-	public void setCategory(int category) {
+	public void setCategory(String category) {
 		this.category = category;
 	}
 
@@ -89,35 +104,35 @@ public class Resource {
 		this.isWorkDay = isWorkDay;
 	}
 
-	public String getStartWorkDay() {
+	public int getStartWorkDay() {
 		return startWorkDay;
 	}
 
-	public void setStartWorkDay(String startWorkDay) {
+	public void setStartWorkDay(int startWorkDay) {
 		this.startWorkDay = startWorkDay;
 	}
 
-	public String getEndWorkDay() {
+	public int getEndWorkDay() {
 		return endWorkDay;
 	}
 
-	public void setEndWorkDay(String endWorkDay) {
+	public void setEndWorkDay(int endWorkDay) {
 		this.endWorkDay = endWorkDay;
 	}
 
-	public String getStartWorkTime() {
+	public int getStartWorkTime() {
 		return startWorkTime;
 	}
 
-	public void setStartWorkTime(String startWorkTime) {
+	public void setStartWorkTime(int startWorkTime) {
 		this.startWorkTime = startWorkTime;
 	}
 
-	public String getEndWorkTime() {
+	public int getEndWorkTime() {
 		return endWorkTime;
 	}
 
-	public void setEndWorkTime(String endWorkTime) {
+	public void setEndWorkTime(int endWorkTime) {
 		this.endWorkTime = endWorkTime;
 	}
 
@@ -135,6 +150,14 @@ public class Resource {
 
 	public void setPlanAlloc(String planAlloc) {
 		this.planAlloc = planAlloc;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 
 	

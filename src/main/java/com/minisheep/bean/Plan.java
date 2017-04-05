@@ -16,10 +16,10 @@ public class Plan {
 	private int totalCost;
 	
 	//开始时间
-	private String planStartTime;
+	private int planStartTime;
 	
 	//结束时间
-	private String planEndTime;
+	private int planEndTime;
 	
 	//完成度(0-100代表 0% ~ 100%)
 	private int finishProcess;
@@ -51,19 +51,19 @@ public class Plan {
 		this.totalCost = totalCost;
 	}
 
-	public String getPlanStartTime() {
+	public int getPlanStartTime() {
 		return planStartTime;
 	}
 
-	public void setPlanStartTime(String planStartTime) {
+	public void setPlanStartTime(int planStartTime) {
 		this.planStartTime = planStartTime;
 	}
 
-	public String getPlanEndTime() {
+	public int getPlanEndTime() {
 		return planEndTime;
 	}
 
-	public void setPlanEndTime(String planEndTime) {
+	public void setPlanEndTime(int planEndTime) {
 		this.planEndTime = planEndTime;
 	}
 

@@ -30,8 +30,14 @@ public class Resource {
 	//资源上班时间结束(几点,换算成分钟) 
 	private int endWorkTime;
 	
+	//记录上一次开始时间,方便回滚
+	private int lastStartTime;
+	
+	//记录上一次所剩余的能量,方便回滚
+	private int lastRemainEnergy;
+	
 	//能量,100%代表不可用了,用0-100表示
-	private int energy;
+	private float energy;
 	
 	//剩余可用时常
 	private int remainMinute;
@@ -136,11 +142,11 @@ public class Resource {
 		this.endWorkTime = endWorkTime;
 	}
 
-	public int getEnergy() {
+	public float getEnergy() {
 		return energy;
 	}
 
-	public void setEnergy(int energy) {
+	public void setEnergy(float energy) {
 		this.energy = energy;
 	}
 
@@ -158,6 +164,22 @@ public class Resource {
 
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	public int getLastStartTime() {
+		return lastStartTime;
+	}
+
+	public void setLastStartTime(int lastStartTime) {
+		this.lastStartTime = lastStartTime;
+	}
+
+	public int getLastRemainEnergy() {
+		return lastRemainEnergy;
+	}
+
+	public void setLastRemainEnergy(int lastRemainEnergy) {
+		this.lastRemainEnergy = lastRemainEnergy;
 	}
 
 	

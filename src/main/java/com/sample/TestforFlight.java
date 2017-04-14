@@ -1,5 +1,6 @@
 package com.sample;
 
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,35 +8,111 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import com.minisheep.bean.Plan;
 import com.minisheep.bean.Resource;
 
-public class TestFlightPlan{
+public class TestforFlight extends Thread{
 	private static List<Plan> lsPlans;
 	private static List<Resource> lsResources;
 	private static int position;
 	private static int MIN = 0xfffffff;
+	private static int cnt = 0;  //代表第几个任务
+	private static PointRuleEngine pointRuleEngine = new PointRuleEngineImpl();
 	
-//	@Override
-//	public void run() {
-//		// TODO Auto-generated method stub
-//		super.run();
-//		try{
-//			lsResources.get(position).setEnableWork(false);
-//			//System.out.println("enableWork:" + lsResources.get(j).isEnableWork());
-//			Thread.sleep(10000);
-//		}catch (Exception e) {
-//			// TODO: handle exception
-//			e.printStackTrace();
-//		}
-//		
-//	}
+	public static synchronized void func(){
+		int planStartTime = lsPlans.get(cnt).getPlanStartTime();  //任务开始时间
+		int planEndTime = lsPlans.get(cnt).getPlanEndTime();  //任务结束时间
+		String titleName = lsPlans.get(cnt).getPlanTitle();  //任务的类别标题
+		position = 0;	
+		MIN = 0xfffffff;
+		
+		System.out.println("任务" + (cnt + 1) + "来了");
+		System.out.println("任务开始时间为:" + planStartTime + " 结束时间为:" + planEndTime + " 任务的类别为:" + titleName);
+		boolean find = false;
+		List<Integer> ls = new ArrayList<Integer>();  //存放之前的节点
+		for(int j=0;j<lsResources.size();j++){
+			lsResources.get(j).getPlan().setPlanStartTime(planStartTime);
+			lsResources.get(j).getPlan().setPlanEndTime(planEndTime);
+			lsResources.get(j).getPlan().setPlanTitle(titleName);
+			
+			
+			//BUG，满足条件就会加上时间,所以要再加条规则，判断是否已经被选中 
+			pointRuleEngine.executeRuleEngine(lsResources.get(j));  
+			
+			if(lsResources.get(j).isEnableWork() != false){  //这个人可以胜任这项工作
+				find = true;
+				
+				if(lsResources.get(j).getRemainMinute() <= MIN){
+					ls.add(j);   //这个要放在里面
+					MIN = lsResources.get(j).getRemainMinute();  //获取当前体力最大的那个人
+					//System.out.println("该人员工作了:" + MIN + "小时");
+					position = j;  //当前节点
+					//System.out.println("postion:" + position);
+				}
+				//System.out.println("当前体力花的最少的人为:" + (position+1));
+			}
+		}
+		
+		for(int size = 0;size < ls.size() - 1;size++){   //遍历的回滚
+			lsResources.get(ls.get(size)).setEnableWork(false);  //前面的人员还不能工作
+			lsResources.get(ls.get(size)).setWorking(true);  //执行引擎的条件
+			pointRuleEngine.executeRuleEngine(lsResources.get(ls.get(size)));
+			lsResources.get(ls.get(size)).setWorking(false);  //执行完条件清空
+			//System.out.println("编号" + (ls.get(size) + 1) + ",可以开始工作的时间:" + lsResources.get(ls.get(size)).getStartWorkTime());
+		}
+		if(find != true){  //如果不能工作
+			System.out.println("该任务没有可用的人手,分配失败!");
+		}else{
+			//遍历完所有的人后再做决定可以按体力合理分配,选择时常多的人优先分配
+			
+			System.out.println("人员" + lsResources.get(position).getId() + "被分配!"+" 人员类别为:" + lsResources.get(position).getCategory());
+			System.out.println("该人员Id编号为:" + lsResources.get(position).getId());
+			System.out.println("分配到的任务为:" + "任务" + (cnt + 1));
+			//lsResources.get(j).setWorking(true);  //已经被分配了
+			System.out.println("该" + (position + 1) + "号人员可以再开始执行任务的时间为:" + 
+					lsResources.get(position).getStartWorkTime() + "时");
+			lsResources.get(position).setEnableWork(false);  //分配任务后这个不能工作了
+			
+		}
+		System.out.println("------------------------------------------------");
+		cnt++;  //下一个任务
+	}
+	
+	public static synchronized int getSecond(){
+		int planStartTime = lsPlans.get(cnt).getPlanStartTime();  //任务开始时间
+		int planEndTime = lsPlans.get(cnt).getPlanEndTime();  //任务结束时间
+		int seconds = planEndTime - planStartTime;
+		
+		return seconds;
+	}
+	
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		super.run();
+		
+		try {
+			int seconds = getSecond();
+			//System.out.println("秒数为:" + seconds);
+			func();
+			
+			Thread.sleep(seconds * 1000);
+			
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	
 	public static void main(String[] args) throws IOException{
-		PointRuleEngine pointRuleEngine = new PointRuleEngineImpl();
-		
+		cnt = 0;
 		//setData();
+		lsPlans = new ArrayList<Plan>();  //所有的任务,只能进行模拟
+		lsResources = new ArrayList<Resource>(); //所有的人
+		
+		lsResources = setPerson();  //获取人员所有信息
+		lsPlans = setPlan(); //获取任务所有信息
 		
 		while(true){
 			InputStream is = System.in;
@@ -48,89 +125,34 @@ public class TestFlightPlan{
 				System.out.println("初始化规则引擎结束.");
 			}else if("e".equals(input)){
 				//final Resource resource = new Resource();
-				lsPlans = new ArrayList<Plan>();  //所有的任务,只能进行模拟
-				lsResources = new ArrayList<Resource>(); //所有的人
-				
-				lsResources = setPerson();  //获取人员所有信息
-				lsPlans = setPlan(); //获取任务所有信息
-				
-				for(int i = 0;i<lsPlans.size();i++){  //模拟任务到来
-					int planStartTime = lsPlans.get(i).getPlanStartTime();  //任务开始时间
-					int planEndTime = lsPlans.get(i).getPlanEndTime();  //任务结束时间
-					String titleName = lsPlans.get(i).getPlanTitle();  //任务的类别标题
-					
-					position = 0;	
-					MIN = 0xfffffff;
-					System.out.println("任务" + (i + 1) + "来了");
-					System.out.println("任务开始时间为:" + planStartTime + " 结束时间为:" + planEndTime + " 任务的类别为:" + titleName);
-					boolean find = false;
-					List<Integer> ls = new ArrayList<Integer>();  //存放之前的节点
-					for(int j=0;j<lsResources.size();j++){
-						lsResources.get(j).getPlan().setPlanStartTime(planStartTime);
-						lsResources.get(j).getPlan().setPlanEndTime(planEndTime);
-						lsResources.get(j).getPlan().setPlanTitle(titleName);
-						
-						
-						//BUG，满足条件就会加上时间,所以要再加条规则，判断是否已经被选中 
-						pointRuleEngine.executeRuleEngine(lsResources.get(j));  
-						
-						if(lsResources.get(j).isEnableWork() != false){  //这个人可以胜任这项工作
-							find = true;
-							
-							if(lsResources.get(j).getRemainMinute() <= MIN){
-								ls.add(j);   //这个要放在里面
-								MIN = lsResources.get(j).getRemainMinute();  //获取当前体力最大的那个人
-								//System.out.println("该人员工作了:" + MIN + "小时");
-								position = j;  //当前节点
-								//System.out.println("postion:" + position);
-							}
-							//System.out.println("当前体力花的最少的人为:" + (position+1));
-						}
-				
-					}
-					for(int size = 0;size < ls.size() - 1;size++){
-						lsResources.get(ls.get(size)).setEnableWork(false);  //前面的人员还不能工作
-						lsResources.get(ls.get(size)).setWorking(true);  //执行引擎的条件
-						pointRuleEngine.executeRuleEngine(lsResources.get(ls.get(size)));
-						lsResources.get(ls.get(size)).setWorking(false);  //执行完条件清空
-						//System.out.println("编号" + (ls.get(size) + 1) + ",可以开始工作的时间:" + lsResources.get(ls.get(size)).getStartWorkTime());
-					}
-					if(find != true){
-						System.out.println("该任务没有可用的人手,分配失败!");
-					}else{
-						//遍历完所有的人后再做决定可以按体力合理分配,选择时常多的人优先分配
-						
-						System.out.println("人员" + lsResources.get(position).getId() + "被分配!"+" 人员类别为:" + lsResources.get(position).getCategory());
-						System.out.println("该人员Id编号为:" + lsResources.get(position).getId());
-						System.out.println("分配到的任务为:" + "任务" + (i + 1));
-						//lsResources.get(j).setWorking(true);  //已经被分配了
-						System.out.println("该" + (position + 1) + "号人员可以再开始执行任务的时间为:" + 
-								lsResources.get(position).getStartWorkTime() + "时");
-						lsResources.get(position).setEnableWork(false); //分配任务后这个不能工作了
-						
-					}
-					System.out.println("------------------------------------------------");
-				
+				Thread thread[] = new Thread[lsPlans.size()];
+				for(int i=0;i<thread.length;i++){
+					thread[i] = new TestforFlight();
+				}
+				for(int i=0;i<thread.length;i++){
+					//运行刚才建立的线程
+					thread[i].start();
+					//System.out.println(i+"执行了!");
+//					try {
+//						thread[i].join();  //等待他完成
+//					} catch (InterruptedException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}  //等待所有线程都执行完
 				}
 				
-				/*
-				//set航班任务起始
-				resource.getPlan().setPlanEndTime(16);  //任务结束时间
-				resource.getPlan().setPlanStartTime(8);  //任务开始时间
-				resource.setStartWorkTime(2); //工人开始上班的时间
-				resource.setEndWorkTime(17); //工人结束上班的时间
-				resource.setRemainMinute((17-2) * 60);
-				resource.setWorking(false);
-				pointRuleEngine.executeRuleEngine(resource);
-				if(resource.isEnableWork() != false){
-					System.out.println("人员可分配!");
-					System.out.println("该人员剩余分钟数为:" + resource.getRemainMinute() + "分钟");
-					System.out.println("下次可以开始执行任务的时间为:" + resource.getStartWorkTime() + "点");
-				}else{
-					System.out.println("人员是不可分配的!");
+				for(int i=0;i<thread.length;i++){
+					try {
+						thread[i].join();  //等待他完成
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}  //等待所有线程都执行完
 				}
 				
-				*/
+				//显示最后结果
+				System.out.println("当天任务全部完成!");
+	
 			}else if("r".equals(input)){
 				System.out.println("刷新规则文件...");
 				pointRuleEngine.refreshEnginRule();
@@ -161,7 +183,7 @@ public class TestFlightPlan{
 
 		//9点开始,11点结束
 		plan3.setPlanStartTime(10);
-		plan3.setPlanEndTime(11);
+		plan3.setPlanEndTime(14);
 		plan3.setPlanTitle("配餐员");
 		
 		//14点开始,17结束
@@ -180,7 +202,7 @@ public class TestFlightPlan{
 		plan6.setPlanTitle("配餐员");
 		
 		//12点开始,15点结束     
-		plan7.setPlanStartTime(16);
+		plan7.setPlanStartTime(15);
 		plan7.setPlanEndTime(17);
 		plan7.setPlanTitle("引导车");
 		
@@ -303,3 +325,4 @@ public class TestFlightPlan{
 		return lsRes;
 	}
 }
+

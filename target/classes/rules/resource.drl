@@ -18,19 +18,16 @@ rule isWorking   //当前有任务在身的不允许执行其他任务
 	salience 100
 	lock-on-active true //no-loop增强版
 	when
-		$resource : Resource((endWorkTime - startWorkTime) >= (plan.planEndTime - plan.planStartTime)
-		,((startWorkTime < plan.planStartTime || startWorkTime == plan.planStartTime) && 
-		(endWorkTime > plan.planEndTime || endWorkTime == plan.planEndTime)) && category == plan.planTitle)  //当前没有任务执行,可以分配任务
+		$resource : Resource(category == plan.planTitle && isWorking == false)  //当前没有任务执行,可以分配任务
 	then
-		$resource.setEnableWork(true);  //这个人是可以工作的
+		//$resource.setEnableWork(true);  //这个人是可以工作的
 		$resource.setLastRemainEnergy($resource.getRemainMinute()); //保存工作时长,方便回滚
-		$resource.setLastStartTime($resource.getStartWorkTime()); //保存下一次可以开始工作的时间,方便回滚
+		$resource.setCanUse(true);   //能用
 		$resource.setRemainMinute($resource.getRemainMinute() + ($resource.getPlan().getPlanEndTime() - $resource.getPlan().getPlanStartTime()));  //已经工作时长
-		$resource.setStartWorkTime($resource.getPlan().getPlanEndTime());  //任务的结束时间就是该人员可以再开始的时间
 		
-		//加一个占比
-		
-		
+		//任务下一次可以开始时间,由于不在规则中灵活分配,所以注释掉了
+		//$resource.setStartWorkTime($resource.getPlan().getPlanEndTime());  //任务的结束时间就是该人员可以再开始的时间
+				
 		//update($resource);
 		//System.out.println("working enable");
 		
@@ -45,7 +42,10 @@ rule subStartWorkTime
 	 	$resource : Resource(isWorking == true)
 	then
 		//$resource.setEnableWork(false);
+		$resource.setCanUse(false);
 		$resource.setRemainMinute($resource.getLastRemainEnergy());  //已经工作时长
-		$resource.setStartWorkTime($resource.getLastStartTime());  //任务的结束时间就是该人员可以再开始的时间
+		//System.out.println("回滚后为:" + ($resource.getRemainMinute() - $resource.getLastRemainEnergy()));
+		
 end
+
 

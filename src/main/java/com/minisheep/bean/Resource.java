@@ -53,6 +53,8 @@ public class Resource {
 	
 	//能否胜任此项工作
 	private boolean enableWork;
+	
+	private boolean canUse;
 
 	public boolean isEnableWork() {
 		return enableWork;
@@ -181,6 +183,15 @@ public class Resource {
 	public void setLastRemainEnergy(int lastRemainEnergy) {
 		this.lastRemainEnergy = lastRemainEnergy;
 	}
+
+	public boolean isCanUse() {
+		return canUse;
+	}
+
+	public void setCanUse(boolean canUse) {
+		this.canUse = canUse;
+	}
+
 
 	
 }

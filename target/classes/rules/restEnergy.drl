@@ -3,14 +3,49 @@ package com.minisheep.bean
 import com.minisheep.bean.Resource;
 import com.minisheep.bean.Plan;
 
-rule restEnergy
-	salience 99
+/*
+	1.能量不足,不能参与该任务(剩余时常)
+	2.不是对应航班任务的人员不能执行该任务
+	3.不在相应时间的不能参与该任务(周几,几点)
+	4.有其他任务在身的不能参与该任务(isWorking)
+	5.如果任务完成的话setWorking置为false,一分配到任务体力立刻扣掉相应的航班任务所需时间
+*/
+
+
+//还没加上体力的判断,同样的资源,同样的可以执行任务,有限派出体力多的
+//任务执行完毕还原
+rule isWorking   //当前有任务在身的不允许执行其他任务
+	salience 100
 	lock-on-active true //no-loop增强版
 	when
-		$resource : Resource(isWorking == true)
+		$resource : Resource((endWorkTime - startWorkTime) >= (plan.planEndTime - plan.planStartTime)
+		,((startWorkTime < plan.planStartTime || startWorkTime == plan.planStartTime) && 
+		(endWorkTime > plan.planEndTime || endWorkTime == plan.planEndTime)) && category == plan.planTitle)  //当前没有任务执行,可以分配任务
 	then
-		$resource.setRemainMinute($resource.getRemainMinute() - (($resource.getPlan().getPlanEndTime() - $resource.getPlan().getPlanStartTime()) * 60));
-		$resource.setStartWorkTime($resource.getStartWorkTime() + ($resource.getPlan().getPlanEndTime() - $resource.getPlan().getPlanStartTime()));
-		//System.out.println("Remain:" + $resource.getRemainMinute() - (($resource.getPlan().getPlanEndTime() - $resource.getPlan().getPlanStartTime()) * 60));
-		System.out.println("startWorkTime:" + $resource.getStartWorkTime() + ($resource.getPlan().getPlanEndTime() - $resource.getPlan().getPlanStartTime()));
+		$resource.setEnableWork(true);  //这个人是可以工作的
+		$resource.setLastRemainEnergy($resource.getRemainMinute()); //保存工作时长,方便回滚
+		$resource.setLastStartTime($resource.getStartWorkTime()); //保存下一次可以开始工作的时间,方便回滚
+		$resource.setRemainMinute($resource.getRemainMinute() + ($resource.getPlan().getPlanEndTime() - $resource.getPlan().getPlanStartTime()));  //已经工作时长
+		$resource.setStartWorkTime($resource.getPlan().getPlanEndTime());  //任务的结束时间就是该人员可以再开始的时间
+		
+		//加一个占比
+		
+		
+		//update($resource);
+		//System.out.println("working enable");
+		
+		//startWorkTime的问题,导致不行
 end
+
+//经过规则引擎时多算的，要扣除
+rule subStartWorkTime
+	salience 100
+	lock-on-active true //no-loop增强版
+	when
+	 	$resource : Resource(isWorking == true)
+	then
+		//$resource.setEnableWork(false);
+		$resource.setRemainMinute($resource.getLastRemainEnergy());  //已经工作时长
+		$resource.setStartWorkTime($resource.getLastStartTime());  //任务的结束时间就是该人员可以再开始的时间
+end
+
